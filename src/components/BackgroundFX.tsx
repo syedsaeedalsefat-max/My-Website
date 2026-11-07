@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTheme, type Theme } from '../context/ThemeContext'
+import CyberCodeBg from './CyberCodeBg'
 
 // Background video for each mode. `start` = second to start/restart from.
 const VIDEOS: Record<Theme, { id: string; start: number }> = {
@@ -127,13 +128,13 @@ export default function BackgroundFX() {
           transition={{ duration: 0.6 }}
           className="absolute inset-0"
         >
-          <VideoBg id={v.id} start={v.start} />
+          {theme === 'cyber' ? <CyberCodeBg /> : <VideoBg id={v.id} start={v.start} />}
         </motion.div>
       </AnimatePresence>
       {/* dark overlay keeps text readable */}
       <div
         className="absolute inset-0"
-        style={{ background: theme === 'cyber' ? 'rgba(4,6,11,0.55)' : 'rgba(3,12,31,0.6)' }}
+        style={{ background: theme === 'cyber' ? 'rgba(4,6,14,0.32)' : 'rgba(3,12,31,0.6)' }}
       />
     </div>
   )
