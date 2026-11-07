@@ -4,11 +4,12 @@ import { useTheme } from '../context/ThemeContext'
 import { useDevice } from '../utils/useDevice'
 import CyberCodeBg from './CyberCodeBg'
 
-const MARITIME_VIDEO_SRC = '/videos/misc-maritime.mp4'
+const MARITIME_START_SEC = 23
+const MARITIME_VIDEO_SRC = `/videos/misc-maritime.mp4#t=${MARITIME_START_SEC}`
 
 /**
  * Native, fast-loading, muted HTML5 video background for Merchant Navy mode
- * with vivid color-grading & clarity enhancement.
+ * starting at 23s and looping back to 23s continuously.
  */
 function MaritimeVideoBg() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -21,17 +22,59 @@ function MaritimeVideoBg() {
     v.defaultMuted = true
     v.volume = 0
 
+    const ensureStartAt23 = () => {
+      try {
+        if (v.currentTime < MARITIME_START_SEC) {
+          v.currentTime = MARITIME_START_SEC
+        }
+      } catch {
+        /* ignore if metadata not ready yet */
+      }
+    }
+
     const tryPlay = () => {
       v.muted = true
+      ensureStartAt23()
       v.play().catch(() => {
         /* autoplay will unlock on first touch if restricted */
       })
     }
-    tryPlay()
+
+    const onLoadedMetadata = () => {
+      v.currentTime = MARITIME_START_SEC
+      tryPlay()
+    }
+
+    const onTimeUpdate = () => {
+      if (v.currentTime < MARITIME_START_SEC - 0.5) {
+        v.currentTime = MARITIME_START_SEC
+      } else if (v.duration && v.duration - v.currentTime <= 0.15) {
+        v.currentTime = MARITIME_START_SEC
+        v.play().catch(() => {})
+      }
+    }
+
+    const onEnded = () => {
+      v.currentTime = MARITIME_START_SEC
+      v.play().catch(() => {})
+    }
+
+    v.addEventListener('loadedmetadata', onLoadedMetadata)
+    v.addEventListener('timeupdate', onTimeUpdate)
+    v.addEventListener('ended', onEnded)
+
+    if (v.readyState >= 1) {
+      onLoadedMetadata()
+    } else {
+      tryPlay()
+    }
 
     window.addEventListener('touchstart', tryPlay, { once: true, passive: true })
     window.addEventListener('pointerdown', tryPlay, { once: true, passive: true })
     return () => {
+      v.removeEventListener('loadedmetadata', onLoadedMetadata)
+      v.removeEventListener('timeupdate', onTimeUpdate)
+      v.removeEventListener('ended', onEnded)
       window.removeEventListener('touchstart', tryPlay)
       window.removeEventListener('pointerdown', tryPlay)
     }
@@ -57,7 +100,6 @@ function MaritimeVideoBg() {
         ref={videoRef}
         src={MARITIME_VIDEO_SRC}
         autoPlay
-        loop
         muted
         playsInline
         preload="auto"
