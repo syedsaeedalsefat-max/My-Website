@@ -28,7 +28,7 @@ export default function Section({
   children: ReactNode
 }) {
   return (
-    <section id={id} className="relative mx-auto max-w-6xl px-4 py-12 sm:px-5 sm:py-20">
+    <section id={id} className="relative mx-auto max-w-6xl overflow-x-clip px-4 py-12 sm:px-5 sm:py-20">
       <motion.div
         variants={stagger}
         initial="hidden"

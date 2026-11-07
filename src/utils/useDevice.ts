@@ -44,3 +44,4 @@ export function useDevice(): DeviceProfile {
 
   return device
 }
+

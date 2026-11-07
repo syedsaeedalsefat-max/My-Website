@@ -42,6 +42,10 @@
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -49,7 +53,18 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
+   position: relative;
   touch-action: manipulation;
+}
+
+#root {
+  overflow-x: hidden;
+  overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
 }
 
 section {
@@ -111,6 +126,7 @@ section {
 
 .hud-panel {
   position: relative;
+  overflow: hidden;
   background: linear-gradient(135deg,
       color-mix(in srgb, var(--surface) 85%, transparent),
       color-mix(in srgb, var(--surface) 70%, transparent));

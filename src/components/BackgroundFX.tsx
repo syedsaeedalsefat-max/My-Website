@@ -101,12 +101,12 @@ function VideoBg({ id, start }: { id: string; start: number }) {
   }, [id, start])
 
   return (
-    <div className="absolute inset-0 origin-top scale-[1.25] overflow-hidden">
-      {/* scaled up from the top so any text burned into the bottom of the video is cropped off-screen */}
+    <div className="absolute inset-0 overflow-hidden">
+      {/* scaled up from the top inside overflow-hidden so any text burned into the bottom of the video is cropped off-screen */}
       {/* oversized 16:9 box so the video always covers the screen (desktop & mobile) */}
       <div
         ref={holder}
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2 [&_iframe]:h-full [&_iframe]:w-full"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full origin-top -translate-x-1/2 -translate-y-1/2 scale-[1.25] [&_iframe]:h-full [&_iframe]:w-full"
       />
     </div>
   )
