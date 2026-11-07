@@ -18,6 +18,7 @@ const SECURITY_HEADERS: Record<string, string> = {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https://i.ytimg.com https://yt3.ggpht.com",
+    "media-src 'self' blob: data:",
     "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
     "connect-src 'self' ws: wss: https://www.youtube.com https://*.googlevideo.com",
     "object-src 'none'",
