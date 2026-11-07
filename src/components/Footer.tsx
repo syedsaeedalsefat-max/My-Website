@@ -24,19 +24,19 @@ export default function Footer() {
             href={emailUrl}
             whileHover={{ y: -6, scale: 1.02 }}
             whileTap={{ scale: 0.96, filter: 'brightness(1.4)' }}
-            className="hud-panel cut flex items-center justify-between gap-4 p-5"
+            className="hud-panel cut flex flex-col items-start justify-between gap-4 p-4 sm:flex-row sm:items-center sm:p-5"
           >
-            <div className="flex min-w-0 items-center gap-4">
-              <Mail className="shrink-0 text-accent" size={28} />
+            <div className="flex min-w-0 items-center gap-3.5 sm:gap-4">
+              <Mail className="shrink-0 text-accent" size={26} />
               <div className="min-w-0">
                 <div className="game-title text-xs text-accent2">Scan or click to email</div>
-                <div className="game-title break-all text-lg text-fg sm:text-xl">
+                <div className="game-title break-all text-base text-fg sm:text-xl">
                   {profile.email}
                 </div>
               </div>
             </div>
-            <div className="cut-sm shrink-0 bg-white p-2 shadow-md">
-              <QRCodeSVG value={emailUrl} size={76} level="M" />
+            <div className="cut-sm self-end bg-white p-1.5 shadow-md sm:self-auto sm:p-2">
+              <QRCodeSVG value={emailUrl} size={68} level="M" />
             </div>
           </motion.a>
 
@@ -48,19 +48,19 @@ export default function Footer() {
             rel="noopener noreferrer"
             whileHover={{ y: -6, scale: 1.02 }}
             whileTap={{ scale: 0.96, filter: 'brightness(1.4)' }}
-            className="hud-panel cut flex items-center justify-between gap-4 p-5"
+            className="hud-panel cut flex flex-col items-start justify-between gap-4 p-4 sm:flex-row sm:items-center sm:p-5"
           >
-            <div className="flex min-w-0 items-center gap-4">
-              <MessageCircle className="shrink-0 text-accent" size={28} />
+            <div className="flex min-w-0 items-center gap-3.5 sm:gap-4">
+              <MessageCircle className="shrink-0 text-accent" size={26} />
               <div className="min-w-0">
                 <div className="game-title text-xs text-accent2">Scan or click to message</div>
-                <div className="game-title text-lg text-fg sm:text-2xl">
+                <div className="game-title text-base text-fg sm:text-2xl">
                   WhatsApp {profile.whatsapp}
                 </div>
               </div>
             </div>
-            <div className="cut-sm shrink-0 bg-white p-2 shadow-md">
-              <QRCodeSVG value={whatsappUrl} size={76} level="M" />
+            <div className="cut-sm self-end bg-white p-1.5 shadow-md sm:self-auto sm:p-2">
+              <QRCodeSVG value={whatsappUrl} size={68} level="M" />
             </div>
           </motion.a>
 

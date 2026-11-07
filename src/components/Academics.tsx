@@ -91,7 +91,7 @@ export default function Academics() {
                       </div>
 
                       {/* Scrollable full-page website preview screen */}
-                      <div className="relative h-56 w-full overflow-y-auto bg-black">
+                      <div className="relative h-48 w-full overflow-y-auto overscroll-contain bg-black sm:h-56">
                         <a
                           href={a.url}
                           target="_blank"

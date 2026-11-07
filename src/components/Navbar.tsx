@@ -61,7 +61,7 @@ export default function Navbar() {
                   <motion.span layoutId="pill" className="absolute inset-0 -z-10 bg-accent" />
                 )}
                 {t === 'maritime' ? <Anchor size={14} /> : <Terminal size={14} />}
-                <span className="hidden sm:inline">{t === 'maritime' ? 'Navy' : 'Cyber'}</span>
+                <span>{t === 'maritime' ? 'Navy' : 'Cyber'}</span>
               </button>
             ))}
           </div>

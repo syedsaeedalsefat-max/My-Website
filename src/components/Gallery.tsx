@@ -5,11 +5,13 @@ import { X, ChevronLeft, ChevronRight, Expand } from 'lucide-react'
 import Section, { slideIn } from './Section'
 import { gallery as allPhotos } from '../data/portfolioData'
 import { useTheme } from '../context/ThemeContext'
+import { useDevice } from '../utils/useDevice'
 
 const SLIDE_INTERVAL_MS = 4500
 
 export default function Gallery() {
   const { theme } = useTheme()
+  const { isMobile } = useDevice()
   // Merchant Navy photos are hidden in Cyber Security mode
   const gallery = allPhotos.filter((g) => !(theme === 'cyber' && g.maritimeOnly))
   const [slideIdx, setSlideIdx] = useState(0)
@@ -84,17 +86,25 @@ export default function Gallery() {
           <AnimatePresence mode="wait">
             <motion.div
               key={showcase.src}
-              layout
-              initial={{ opacity: 0, x: 70, skewX: -6, filter: 'brightness(1.6)' }}
-              animate={{ opacity: 1, x: 0, skewX: 0, filter: 'brightness(1)' }}
-              exit={{ opacity: 0, x: -70, skewX: 6 }}
-              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+              layout={!isMobile}
+              initial={
+                isMobile
+                  ? { opacity: 0, x: 28 }
+                  : { opacity: 0, x: 70, skewX: -6, filter: 'brightness(1.6)' }
+              }
+              animate={
+                isMobile
+                  ? { opacity: 1, x: 0 }
+                  : { opacity: 1, x: 0, skewX: 0, filter: 'brightness(1)' }
+              }
+              exit={isMobile ? { opacity: 0, x: -28 } : { opacity: 0, x: -70, skewX: 6 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="relative flex flex-col items-center"
             >
               <img
                 src={showcase.src}
                 alt={showcase.title}
-                className="block max-h-[68vh] w-auto max-w-full object-contain transition duration-500 group-hover:scale-[1.02]"
+                className="block max-h-[54vh] w-auto max-w-full object-contain transition duration-500 group-hover:scale-[1.02] sm:max-h-[68vh]"
               />
               <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/50 to-transparent p-4 pt-12 sm:p-6 sm:pt-16">
                 <div className="flex items-end justify-between gap-4">
