@@ -1,13 +1,21 @@
 import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTheme } from '../context/ThemeContext'
+import { useDevice } from '../utils/useDevice'
 import CyberCodeBg from './CyberCodeBg'
 
-// Pre-trimmed so it already begins at the 23s mark of the original brand video, muted (no audio track).
-const MARITIME_VIDEO_SRC = '/videos/misc-maritime.mp4'
+// Both files are pre-trimmed to begin at the 23s mark of the original brand video, with no audio track.
+// Landscape screens get the 16:9 HD file; portrait phones get a lighter 9:16 file cropped for tall screens.
+const VIDEO_LANDSCAPE = '/videos/misc-maritime.mp4'
+const VIDEO_PORTRAIT = '/videos/misc-maritime-mobile.mp4'
+const POSTER_LANDSCAPE = '/videos/poster-desktop.jpg'
+const POSTER_PORTRAIT = '/videos/poster-mobile.jpg'
 
-/** Muted, endlessly looping MP4 background for Merchant Navy mode (native loop, no seeking needed). */
+/** Muted, endlessly looping MP4 background for Merchant Navy mode, matched to the screen's aspect ratio. */
 function MaritimeVideoBg() {
+  const { isPortrait } = useDevice()
+  const src = isPortrait ? VIDEO_PORTRAIT : VIDEO_LANDSCAPE
+  const poster = isPortrait ? POSTER_PORTRAIT : POSTER_LANDSCAPE
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -23,14 +31,16 @@ function MaritimeVideoBg() {
     }
     tryPlay()
     v.addEventListener('canplay', tryPlay)
-    // Safety net: restart if it ever ends or stalls on pause
+    // Safety net: restart if it ever ends
     const onEnded = () => {
       v.currentTime = 0
       tryPlay()
     }
     v.addEventListener('ended', onEnded)
+    // Save battery/GPU: pause when the tab is hidden, resume when back
     const onVisible = () => {
-      if (!document.hidden) tryPlay()
+      if (document.hidden) v.pause()
+      else tryPlay()
     }
     document.addEventListener('visibilitychange', onVisible)
 
@@ -43,20 +53,24 @@ function MaritimeVideoBg() {
       window.removeEventListener('touchstart', tryPlay)
       window.removeEventListener('pointerdown', tryPlay)
     }
-  }, [])
+  }, [src])
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-bg">
       <video
+        key={src}
         ref={videoRef}
-        src={MARITIME_VIDEO_SRC}
+        src={src}
+        poster={poster}
         autoPlay
         loop
         muted
         playsInline
         preload="auto"
         disablePictureInPicture
-        className="pointer-events-none h-full w-full object-cover"
+        disableRemotePlayback
+        className="pointer-events-none h-full w-full transform-gpu object-cover will-change-transform"
+        style={{ objectPosition: isPortrait ? '55% center' : 'center' }}
       />
     </div>
   )

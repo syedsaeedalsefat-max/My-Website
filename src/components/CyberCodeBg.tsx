@@ -483,7 +483,7 @@ type FloatingNode = {
  */
 export default function CyberCodeBg() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { isMobile } = useDevice()
+  const { isMobile, isLowPower } = useDevice()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -494,18 +494,18 @@ export default function CyberCodeBg() {
     let rafId = 0
     let width = window.innerWidth
     let height = window.innerHeight
-    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75)
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5)
 
     // Pre-build sprites once so the animation loop only does fast GPU drawImage calls
-    const bokehSprites = [1, 2, 3, 4, 5, 6].map((seed) => createBokehCluster(seed, dpr))
+    const bokehSprites = [1, 2, 3, 4].map((seed) => createBokehCluster(seed, dpr))
     const farSprites = CODE_SNIPPETS.map((s) =>
-      createCodeSprite(s, isMobile ? 0.56 : 0.68, 2.6, 0.48, dpr),
+      createCodeSprite(s, isMobile ? 0.54 : 0.68, isMobile ? 1.5 : 2.6, 0.48, dpr),
     )
     const midSprites = CODE_SNIPPETS.map((s) =>
-      createCodeSprite(s, isMobile ? 0.74 : 0.88, 1.0, 0.75, dpr),
+      createCodeSprite(s, isMobile ? 0.70 : 0.88, isMobile ? 0.6 : 1.0, 0.75, dpr),
     )
     const nearSprites = CODE_SNIPPETS.map((s) =>
-      createCodeSprite(s, isMobile ? 0.88 : 1.05, 0, 0.98, dpr),
+      createCodeSprite(s, isMobile ? 0.85 : 1.05, 0, 0.98, dpr),
     )
 
     let nodes: FloatingNode[] = []
@@ -518,11 +518,11 @@ export default function CyberCodeBg() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
       nodes = []
-      const spanW = Math.max(width * 1.45, 920)
-      const spanH = Math.max(height * 1.35, 760)
+      const spanW = Math.max(width * 1.35, 750)
+      const spanH = Math.max(height * 1.3, 680)
 
-      // Layer 0: Dense bokeh code streaks in the deep background
-      const bokehCount = isMobile ? 16 : 26
+      // Layer 0: Dense bokeh code streaks in the deep background (trimmed on phones for butter-smooth 60fps)
+      const bokehCount = isLowPower ? 6 : isMobile ? 10 : 24
       for (let i = 0; i < bokehCount; i++) {
         const sprite = bokehSprites[i % bokehSprites.length]
         nodes.push({
@@ -537,7 +537,7 @@ export default function CyberCodeBg() {
       }
 
       // Layer 1: Far blurred code blocks
-      const farCount = isMobile ? 8 : 12
+      const farCount = isLowPower ? 4 : isMobile ? 6 : 12
       for (let i = 0; i < farCount; i++) {
         const sprite = farSprites[i % farSprites.length]
         nodes.push({
@@ -552,7 +552,7 @@ export default function CyberCodeBg() {
       }
 
       // Layer 2: Mid-depth soft-focus code blocks
-      const midCount = isMobile ? 6 : 9
+      const midCount = isLowPower ? 3 : isMobile ? 5 : 9
       for (let i = 0; i < midCount; i++) {
         const sprite = midSprites[(i + 3) % midSprites.length]
         nodes.push({
@@ -567,7 +567,7 @@ export default function CyberCodeBg() {
       }
 
       // Layer 3: Sharp foreground syntax-highlighted code blocks
-      const nearCount = isMobile ? 5 : 7
+      const nearCount = isLowPower ? 3 : isMobile ? 4 : 7
       for (let i = 0; i < nearCount; i++) {
         const sprite = nearSprites[i % nearSprites.length]
         nodes.push({
@@ -645,7 +645,7 @@ export default function CyberCodeBg() {
       window.cancelAnimationFrame(rafId)
       window.removeEventListener('resize', buildScene)
     }
-  }, [isMobile])
+  }, [isMobile, isLowPower])
 
   return (
     <canvas
