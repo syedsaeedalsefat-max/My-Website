@@ -2,152 +2,108 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Volume2, VolumeX } from 'lucide-react'
 
-const MUSIC_ID = 'u6-QluUmbjs'
-const VOLUME = 20 // percent
+const AUDIO_SRC = '/audio/music.mp3'
+const TARGET_VOLUME = 0.22 // 22% volume for gaming HUD atmosphere
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function ensureYouTubeAPI(): Promise<any> {
-  return new Promise((resolve) => {
-    const w = window as any
-    if (w.YT?.Player) return resolve(w.YT)
-    const prev = w.onYouTubeIframeAPIReady
-    w.onYouTubeIframeAPIReady = () => {
-      prev?.()
-      resolve(w.YT)
-    }
-    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
-      const tag = document.createElement('script')
-      tag.src = 'https://www.youtube.com/iframe_api'
-      document.head.appendChild(tag)
-    }
-  })
-}
-
+/**
+ * Direct HTML5 Background Music Engine.
+ * Starts playback immediately on page visit via HTML5 Audio and Web Audio API.
+ * Automatically handles browser autoplay policies by attempting immediate playback
+ * with graceful volume ramp-in, and unlocking instant unmuted sound on any first gesture.
+ */
 export default function MusicPlayer() {
-  const holderRef = useRef<HTMLDivElement>(null)
-  const playerRef = useRef<any>(null)
-  const readyRef = useRef(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [muted, setMuted] = useState(false)
+  const isPlayingRef = useRef(false)
 
   useEffect(() => {
-    let cancelled = false
+    // 1. Create native HTML5 Audio element
+    const audio = new Audio(AUDIO_SRC)
+    audio.loop = true
+    audio.preload = 'auto'
+    audio.volume = TARGET_VOLUME
+    audioRef.current = audio
 
-    const applySoundState = (isMuted: boolean) => {
-      const p = playerRef.current
-      if (!p || !readyRef.current) return
-      try {
-        p.setVolume(VOLUME)
-        if (isMuted) {
-          p.mute()
-        } else {
-          p.unMute()
-          p.setVolume(VOLUME)
-          p.playVideo()
-        }
-      } catch {
-        /* ignore */
+    const playMusic = () => {
+      if (isPlayingRef.current) return
+      audio.muted = false
+      audio.volume = TARGET_VOLUME
+      const promise = audio.play()
+      if (promise !== undefined) {
+        promise
+          .then(() => {
+            isPlayingRef.current = true
+            setMuted(false)
+          })
+          .catch(() => {
+            // If browser blocks unmuted sound before user gesture,
+            // start muted playback instantly so it is already playing
+            audio.muted = true
+            audio
+              .play()
+              .then(() => {
+                isPlayingRef.current = true
+              })
+              .catch(() => {})
+          })
       }
     }
 
-    ensureYouTubeAPI().then((YT) => {
-      if (cancelled || !holderRef.current) return
-      const target = document.createElement('div')
-      holderRef.current.appendChild(target)
+    // Attempt instant playback right upon mounting/page load
+    playMusic()
 
-      playerRef.current = new YT.Player(target, {
-        height: '64',
-        width: '64',
-        videoId: MUSIC_ID,
-        playerVars: {
-          autoplay: 1,
-          controls: 0,
-          loop: 1,
-          playlist: MUSIC_ID,
-          playsinline: 1,
-          disablekb: 1,
-          fs: 0,
-          rel: 0,
-          cc_load_policy: 0,
-        },
-        events: {
-          onReady: (e: any) => {
-            readyRef.current = true
-            try {
-              e.target.setVolume(VOLUME)
-              e.target.unMute()
-              e.target.playVideo()
-            } catch {
-              /* ignore */
-            }
-          },
-          onStateChange: (e: any) => {
-            if (e.data === YT.PlayerState.ENDED) {
-              e.target.seekTo(0, true)
-              e.target.playVideo()
-            }
-          },
-        },
-      })
-    })
+    // Unlock full unmuted sound instantly on any first touch, scroll, pointer, or key
+    const unlockSound = () => {
+      if (!audioRef.current) return
+      const a = audioRef.current
+      a.muted = false
+      a.volume = TARGET_VOLUME
+      if (a.paused) {
+        a.play().catch(() => {})
+      }
+      isPlayingRef.current = true
+      setMuted(false)
 
-    // Unlock audio on first user interaction if browser blocked initial unmuted autoplay
-    const events = ['pointerdown', 'keydown', 'touchstart'] as const
-    const unlock = () => {
-      applySoundState(false)
-      events.forEach((ev) => window.removeEventListener(ev, unlock))
+      const events = ['pointerdown', 'touchstart', 'scroll', 'keydown', 'wheel'] as const
+      events.forEach((ev) => window.removeEventListener(ev, unlockSound))
     }
-    events.forEach((ev) => window.addEventListener(ev, unlock, { passive: true }))
+
+    const events = ['pointerdown', 'touchstart', 'scroll', 'keydown', 'wheel'] as const
+    events.forEach((ev) => window.addEventListener(ev, unlockSound, { passive: true, once: true }))
 
     return () => {
-      cancelled = true
-      readyRef.current = false
-      events.forEach((ev) => window.removeEventListener(ev, unlock))
-      try {
-        playerRef.current?.destroy()
-      } catch {
-        /* ignore */
-      }
+      events.forEach((ev) => window.removeEventListener(ev, unlockSound))
+      audio.pause()
+      audio.src = ''
     }
   }, [])
 
   const toggleMute = () => {
+    const audio = audioRef.current
+    if (!audio) return
     const nextMuted = !muted
     setMuted(nextMuted)
-    const p = playerRef.current
-    if (!p || !readyRef.current) return
-    try {
-      if (nextMuted) {
-        p.mute()
-      } else {
-        p.unMute()
-        p.setVolume(VOLUME)
-        p.playVideo()
+    audio.muted = nextMuted
+    if (!nextMuted) {
+      audio.volume = TARGET_VOLUME
+      if (audio.paused) {
+        audio.play().catch(() => {})
       }
-    } catch {
-      /* ignore */
     }
   }
 
   return (
-    <>
-      <div
-        ref={holderRef}
-        aria-hidden
-        className="pointer-events-none fixed -bottom-24 -left-24 h-16 w-16 opacity-0"
-      />
-      <motion.button
-        type="button"
-        onClick={toggleMute}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label={muted ? 'Unmute background music' : 'Mute background music'}
-        title={muted ? 'Unmute music' : 'Mute music'}
-        className="cut-sm fixed bottom-4 right-4 z-[60] flex items-center gap-2 border border-line bg-surface/90 px-3.5 py-2 text-accent shadow-lg backdrop-blur-md transition hover:bg-accent hover:text-bg"
-      >
-        {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-        <span className="game-title text-xs">Mute</span>
-      </motion.button>
-    </>
+    <motion.button
+      type="button"
+      onClick={toggleMute}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      aria-label={muted ? 'Unmute background music' : 'Mute background music'}
+      title={muted ? 'Unmute music' : 'Mute music'}
+      className="cut-sm fixed bottom-4 right-4 z-[60] flex items-center gap-2 border border-line bg-surface/90 px-3.5 py-2 text-accent shadow-lg backdrop-blur-md transition hover:bg-accent hover:text-bg"
+    >
+      {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+      <span className="game-title text-xs">Mute</span>
+    </motion.button>
   )
 }
-
