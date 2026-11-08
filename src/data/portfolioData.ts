@@ -6,7 +6,7 @@ export const profile = {
   tagline: 'Officer Cadet',
   taglines: {
     maritime: 'Officer Cadet',
-    cyber: 'Cyber Security Specialist',
+    cyber: 'Cybersecurity Specialist',
   },
   bio: 'Officer Cadet with MISC Berhad, developing professional seamanship and discipline at sea while building expertise in cyber security. I combine the structure of the maritime industry with a growing technical skillset to help protect critical digital systems.',
   // Shown in the Profile section depending on the active mode
