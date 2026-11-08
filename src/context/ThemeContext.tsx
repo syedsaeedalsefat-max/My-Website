@@ -4,18 +4,6 @@ export type Theme = 'maritime' | 'cyber'
 
 const VALID_THEMES: readonly Theme[] = ['maritime', 'cyber']
 
-function readSafeTheme(): Theme {
-  try {
-    const raw = localStorage.getItem('theme')
-    if (raw && (VALID_THEMES as readonly string[]).includes(raw)) {
-      return raw as Theme
-    }
-  } catch {
-    /* ignore storage access errors */
-  }
-  return 'cyber'
-}
-
 interface ThemeContextValue {
   theme: Theme
   setTheme: (t: Theme) => void
@@ -25,7 +13,8 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readSafeTheme)
+  // Always start on Merchant Navy mode by default on every fresh visit / page reload
+  const [theme, setThemeState] = useState<Theme>('maritime')
 
   const setTheme = (next: Theme) => {
     if ((VALID_THEMES as readonly string[]).includes(next)) {
@@ -35,11 +24,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    try {
-      localStorage.setItem('theme', theme)
-    } catch {
-      /* ignore storage errors */
-    }
   }, [theme])
 
   const toggleTheme = () => setThemeState((t) => (t === 'cyber' ? 'maritime' : 'cyber'))
