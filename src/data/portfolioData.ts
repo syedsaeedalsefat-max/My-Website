@@ -22,7 +22,7 @@ export const profile = {
   },
   profileImage: '/images/profile.png',
   profileImages: {
-    maritime: '/images/profile-maritime.png',
+    maritime: '/images/profile.png',
     cyber: '/images/profile.png',
   },
   companyLogo: '/images/misc-logo.png',
